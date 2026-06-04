@@ -14,7 +14,7 @@ pixel_size = 1.6666666667E-02 #In degree
 pixel_size_freq = 7629.39453125 #In Hz
 beam_size = 6.00925212577E-03 #In degree
 
-work_path = "/home/trzguo/content/SDC2/Cornu_et_al_2026_SDC2_models_catalogs_and_codes_archive/codes/complete_training_and_inference_pipeline/"
+work_path = "/home/trzguo/content/github"
 
 #Normalization parameters 
 do_norm = 0
