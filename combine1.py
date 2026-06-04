@@ -1,3 +1,5 @@
+#用于偏振平均与频率拼接
+
 import numpy as np
 from astropy.io import fits
 import glob
