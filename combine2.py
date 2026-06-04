@@ -1,3 +1,12 @@
+'''用于空间拼接，主要功能包括：
+1. 读取多个FITS文件，提取数据和头信息
+2. 检查所有文件的核心WCS参数（CDELT和CTYPE）是否一致
+3. 计算所有文件在RA、Dec、Freq三个轴上的全局坐标范围
+4. 生成新的FITS头，定义拼接后数据的WCS信息
+5. 将所有数据按照新的坐标系统进行拼接，处理重叠区域的平均
+6. 保存最终的拼接结果为新的FITS文件
+'''
+
 import numpy as np
 from astropy.io import fits
 from astropy.wcs import WCS
