@@ -38,7 +38,7 @@ cnn.create_dataset("VALID", nb_valid, input_valid[:,:], targets_valid[:,:])
 ##### YOLO parameters tuning #####
 
 #Size priors for all possible boxes per grid. element
-prior_size = f_ar([[10.0], [10.0], [10.00]]) #原本频率方向是36，但是alfalfa这边的数据不知道为什么源的频率宽度都是10(可能和我pa==180,i==45有关)
+prior_size = f_ar([[10.0], [10.0], [10.00]]) #原本这里频率方向写的是36，但是alfalfa这边的数据不知道为什么源的频率宽度都是10(可能和我pa==180,i==45有关)
 
 #No obj probability prior to rebalance the size distribution
 #prior_noobj_prob = f_ar([0.0004])

@@ -34,6 +34,7 @@ def init_data_gen():
 	c = SkyCoord(ra=true_cat[:,1]*u.degree, dec=true_cat[:,2]*u.degree, frame='icrs')
 	x, y = utils.skycoord_to_pixel(c, wcs_cube, origin=0)
 	z = (1420.40575177/(1 + true_cat[:,5]/299792.458) - 1320.003271102905)/pixel_size_freq * 1e6 + orig_offset_freq + 0.5
+	#由于alfalfa源表中给的是径向速度，所以需要进行转变处理
 
 	# ==============================================
 	# 🔥 关键：过滤掉 超出FITS图像范围 / NaN 的源
@@ -75,6 +76,7 @@ def init_data_gen():
 	x = x_sel + orig_offset_ra + 0.5
 	y = y_sel + orig_offset_dec + 0.5
 	z = (1420.40575177/(1 + select_cat[:,5]/299792.458) - 1320.003271102905)/pixel_size_freq * 1e6 + orig_offset_freq + 0.5
+	#同上处理
 	
 	width  = np.sqrt(((select_cat[:,3]/3600)**2+beam_size**2))/pixel_size
 	height = width
@@ -102,7 +104,7 @@ def init_data_gen():
 		coords[i,3] = max(vertices_new[:,1]) + 2
 		coords[i,4] = -0.5*depth[i] - 5
 		coords[i,5] = +0.5*depth[i] + 5
-		print(f"源{i}: RA框宽={coords[i,1]-coords[i,0]:.1f},DEC={coords[i,3]-coords[i,2]:.1f},FREQ={coords[i,5]-coords[i,4]:.1f}")
+		#print(f"源{i}: RA框宽={coords[i,1]-coords[i,0]:.1f},DEC={coords[i,3]-coords[i,2]:.1f},FREQ={coords[i,5]-coords[i,4]:.1f}")
 	
 	coords[:,0] += x; coords[:,1] += x
 	coords[:,2] += y; coords[:,3] += y

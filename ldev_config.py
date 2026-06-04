@@ -38,7 +38,7 @@ diff_flagging = 1
 
 #####    TRAINING RELATED GLOBAL VARIABLES    #####
 
-flux_clip = [0,300.0]
+flux_clip = [0,300.0] #由于alfalfa中的源流量较小所以下限改为0
 hi_size_clip = [20.0, 700.0]
 w20_clip = [100.0, 700.0]
 angle_res_lim = 6
