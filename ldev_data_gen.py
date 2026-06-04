@@ -13,10 +13,10 @@ def init_data_gen():
 
 	if(do_norm):
 		print("Normalizing LDEV cube, this will take a while ...")
-		cube_norm("merged_cube.fits", "LDEV") 
+		cube_norm("/home/trzguo/content/SDC2/Cornu_et_al_2026_SDC2_models_catalogs_and_codes_archive/codes/complete_training_and_inference_pipeline/data/merged_cube.fits", "LDEV") 
 			#work_path, kernel_size, cube_spliting, size_file_split_limit, compute_std_norm)
 	
-	hdul = fits.open("merged_cube.fits", memmap=True)
+	hdul = fits.open("/home/trzguo/content/SDC2/Cornu_et_al_2026_SDC2_models_catalogs_and_codes_archive/codes/complete_training_and_inference_pipeline/data/merged_cube.fits", memmap=True)
 	wcs_cube = WCS(hdul[0].header)
 	
 	l_ra_pixel_size = ra_pixel_size + orig_offset_ra*2
@@ -368,22 +368,22 @@ def create_valid_batch(visual=0):
 
 def create_test_batch():
 	
-	nb_test = nb_area_sky*nb_area_sky*nb_area_freq
+	nb_test = nb_dec_sky*nb_ra_sky*nb_area_freq
 	
 	input_test = np.zeros((nb_test,1*sky_size*sky_size*freq_size), dtype="float32")
 	targets_test = np.zeros((nb_test,1+max_nb_obj_per_image*(7+nb_param+diff_flagging)), dtype="float32")
 	
 	for patch_freq in range(0,nb_area_freq):
-		for patch_dec in range(0,nb_area_sky):
-			for patch_ra in range(0,nb_area_sky):
+		for patch_dec in range(0,nb_dec_sky):
+			for patch_ra in range(0,nb_ra_sky):
 				
-				i = patch_freq*nb_area_sky*nb_area_sky + patch_dec*nb_area_sky + patch_ra
+				i = patch_freq*nb_ra_sky*nb_dec_sky + patch_dec*nb_ra_sky + patch_ra
 				
 				p_ra   = patch_ra*patch_shift_sky
 				p_dec  = patch_dec*patch_shift_sky
 				p_freq = patch_freq*patch_shift_freq
 				
-				patch = np.copy(norm_data[p_freq:p_freq+freq_size, p_dec:p_dec+sky_size, p_ra:p_ra+sky_size])
+				patch = np.copy(norm_data[p_freq:p_freq+freq_size, p_ra:p_ra+sky_size, p_dec:p_dec+sky_size])
 
 				input_test[i,0:freq_size*sky_size*sky_size] = (patch.flatten("C")/65535.0)*2.0 - 1.0
 				
@@ -422,7 +422,7 @@ def create_test_batch():
 def process_pred(process_file, save_file):
 
 	pred_data = np.fromfile(process_file, dtype="float32")
-	pred_data = np.reshape(pred_data, (nb_area_freq, nb_area_sky, nb_area_sky, nb_box*(8+nb_param), yolo_nb_freq_reg, yolo_nb_sky_reg, yolo_nb_sky_reg))
+	pred_data = np.reshape(pred_data, (nb_area_freq, nb_dec_sky, nb_ra_sky, nb_box*(8+nb_param), yolo_nb_freq_reg, yolo_nb_sky_reg, yolo_nb_sky_reg))
 
 	final_boxes = []
 
@@ -433,8 +433,8 @@ def process_pred(process_file, save_file):
 	start_time = time.time()
 
 	for p_freq in range(0,nb_area_freq):
-		for p_dec in range(0,nb_area_sky):
-			for p_ra in range(0,nb_area_sky):
+		for p_dec in range(0,nb_dec_sky):
+			for p_ra in range(0,nb_ra_sky):
 				
 				c_tile[:,:] = 0.0
 				c_tile_kept[:,:] = 0.0
@@ -447,7 +447,7 @@ def process_pred(process_file, save_file):
 				
 				final_boxes.append(np.copy(c_tile_kept[0:c_nb_box_final]))
 				
-	final_boxes = np.reshape(np.array(final_boxes, dtype="object"), (nb_area_freq, nb_area_sky, nb_area_sky))
+	final_boxes = np.reshape(np.array(final_boxes, dtype="object"), (nb_area_freq, nb_dec_sky, nb_ra_sky))
 
 	c_tile = np.zeros((yolo_nb_sky_reg*yolo_nb_sky_reg*yolo_nb_freq_reg*nb_box,(8+1+nb_param+1)),dtype="float32")
 
@@ -465,13 +465,13 @@ def process_pred(process_file, save_file):
 
 	#Second NMS over all the overlapping patches
 	for p_freq in range(0,nb_area_freq):
-		for p_dec in range(0,nb_area_sky):
-			for p_ra in range(0,nb_area_sky):
+		for p_dec in range(0,nb_dec_sky):
+			for p_ra in range(0,nb_ra_sky):
 				boxes = np.copy(final_boxes[p_freq,p_dec,p_ra])
 				for l in range(0,np.shape(dir_array)[0]):
 					if(p_freq+dir_array[l,2] >= 0 and p_freq+dir_array[l,2] <= nb_area_freq-1 and\
-					   p_dec +dir_array[l,1] >= 0 and p_dec +dir_array[l,1] <= nb_area_sky-1  and\
-					   p_ra  +dir_array[l,0] >= 0 and p_ra  +dir_array[l,0] <= nb_area_sky-1 ):
+					   p_dec +dir_array[l,1] >= 0 and p_dec +dir_array[l,1] <= nb_dec_sky-1  and\
+					   p_ra  +dir_array[l,0] >= 0 and p_ra  +dir_array[l,0] <= nb_ra_sky-1 ):
 						comp_boxes = np.copy(final_boxes[p_freq+dir_array[l,2],p_dec+dir_array[l,1],p_ra+dir_array[l,0]])
 						c_nb_box = inter_patch_NMS(boxes, comp_boxes, c_tile, dir_array[l], l_overlap, l_patch_shift, l_patch_size, -0.3)
 						boxes = np.copy(c_tile[0:c_nb_box,:])
@@ -482,9 +482,9 @@ def process_pred(process_file, save_file):
 	final_boxes_scaled = np.copy(final_boxes)
 	for p_freq in range(0,nb_area_freq):
 		box_freq_offset = p_freq*patch_shift_freq
-		for p_dec in range(0,nb_area_sky):
+		for p_dec in range(0,nb_dec_sky):
 			box_dec_offset = p_dec*patch_shift_sky
-			for p_ra in range(0,nb_area_sky):
+			for p_ra in range(0,nb_ra_sky):
 				box_ra_offset = p_ra*patch_shift_sky
 				
 				final_boxes_scaled[p_freq,p_dec,p_ra][:,0] = box_ra_offset   + final_boxes_scaled[p_freq,p_dec,p_ra][:,0] - 0.5
@@ -505,11 +505,11 @@ def assemble_and_build_catalog():
 	box_cat = np.loadtxt("filtered_pred_ldev.txt")
 	
 	# Remove orig offset
-	box_cat[:,0] -= orig_offset_sky
-	box_cat[:,1] -= orig_offset_sky
+	box_cat[:,0] -= orig_offset_ra
+	box_cat[:,1] -= orig_offset_dec
 	box_cat[:,2] -= orig_offset_freq
-	box_cat[:,3] -= orig_offset_sky
-	box_cat[:,4] -= orig_offset_sky
+	box_cat[:,3] -= orig_offset_ra
+	box_cat[:,4] -= orig_offset_dec
 	box_cat[:,5] -= orig_offset_freq
 	
 	np.savetxt("net_pred_filtered_repos_rescaled_ldev.dat", box_cat)
@@ -561,9 +561,9 @@ def scoring():
 	np.savetxt("pre_opt_cat.txt", pred_cat, header=cat_header, comments="", fmt="%d %3.13f %2.13f %1.13f %1.13f %10.1f %3.13f %2.13f %3.13f")
 	
 	sub_cat_path = "pre_opt_cat.txt"
-	truth_cat_path = "sky_ldev_truthcat_v2.txt"
+	truth_cat_path = "alfalfa_full_catalog.txt"
 
-	scorer = Sdc2Scorer.from_txt(sub_cat_path, truth_cat_path, sub_skiprows=0, truth_skiprows=0)
+	scorer = Sdc2Scorer.from_txt(sub_cat_path, truth_cat_path, sub_skiprows=1, truth_skiprows=1)
 	scorer.run(detail=True)
 	
 	score_details = scorer.score.scores_df

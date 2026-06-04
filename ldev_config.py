@@ -14,7 +14,7 @@ pixel_size = 1.6666666667E-02 #In degree
 pixel_size_freq = 7629.39453125 #In Hz
 beam_size = 6.00925212577E-03 #In degree
 
-work_path = "/home/trzguo/content/github"
+work_path = "/home/trzguo/content/SDC2/Cornu_et_al_2026_SDC2_models_catalogs_and_codes_archive/codes/complete_training_and_inference_pipeline/"
 
 #Normalization parameters 
 do_norm = 0
@@ -38,14 +38,14 @@ diff_flagging = 1
 
 #####    TRAINING RELATED GLOBAL VARIABLES    #####
 
-flux_clip = [0,300.0] #由于alfalfa中的源流量较小所以下限改为0
+flux_clip = [0,300.0]
 hi_size_clip = [20.0, 700.0]
 w20_clip = [100.0, 700.0]
 angle_res_lim = 6
 
 nb_images_per_iter = 1600
 nb_valid = 300
-max_nb_obj_per_image = 100 #10 因为有些patch不知道为什么能截出二十多个源
+max_nb_obj_per_image = 100#10
 bootstrap = 0
 
 sure_source_frac = 0.3 #can be set higher for pre-training -> noobj factor must be scaled accordingly
@@ -75,6 +75,10 @@ orig_offset_freq = patch_shift_freq - ((int(map_pixel_freq_size/2) - int(freq_si
 nb_area_ra = int((ra_pixel_size+2*orig_offset_ra)/patch_shift_sky)
 nb_area_dec = int((dec_pixel_size+2*orig_offset_dec)/patch_shift_sky)
 nb_area_freq = int((map_pixel_freq_size+2*orig_offset_freq)/patch_shift_freq)
+
+nb_ra_sky = 7
+nb_dec_sky = 3
+nb_area_freq = 50
 
 # Function is duplicated in each config file for simpler reading of all above parameters
 # Expect fits files without the extension
